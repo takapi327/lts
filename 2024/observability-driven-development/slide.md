@@ -1,0 +1,276 @@
+---
+marp: true
+---
+
+# オブザーバビリティ駆動開発
+
+Nextbeat
+2024/03/15 (金)
+
+富永 孝彦
+
+---
+
+# 今日話すこと
+
+趣味の箸休めに作ってるサービスの話
+このサービスの構築でマイブームであるオブザーバビリティ駆動開発の嬉しさを語る
+
+[オブザーバビリティ・エンジニアリング](https://www.amazon.co.jp/%E3%82%AA%E3%83%96%E3%82%B6%E3%83%BC%E3%83%90%E3%83%93%E3%83%AA%E3%83%86%E3%82%A3%E3%83%BB%E3%82%A8%E3%83%B3%E3%82%B8%E3%83%8B%E3%82%A2%E3%83%AA%E3%83%B3%E3%82%B0-Charity-Majors/dp/4814400128/ref=sr_1_1?adgrpid=145059206056&dib=eyJ2IjoiMSJ9.mEmr8jYY1Rx4eqIw2RM5hJIxGRwM058pQP6ZmWGTiMiPc2SeOnRs_zHraKTErXyQl6j-m2qCc0huGWdOGGhFMxYMmU0auHPZhVOEqjCjJXIEX4Z5j1qzug-WyBet8udY517gCGvXspf1k15uN059oQ.Gi0FHnU6qbcV0vqBBxYwmJvcY9AvHk-oksbUtWPHsPI&dib_tag=se&gclid=CjwKCAiA_5WvBhBAEiwAZtCU7y3mvg16O8Su8Cm9t5w_WPoikA6Cj9dFWpSYwFX_-fXaGw0uOzSRwBoCp-YQAvD_BwE&hvadid=679073047654&hvdev=c&hvlocphy=1009308&hvnetw=g&hvqmt=e&hvrand=14820850245863278725&hvtargid=kwd-1934908670071&hydadcr=27711_14738816&jp-ad-ap=0&keywords=%E3%82%AA%E3%83%96%E3%82%B6%E3%83%BC%E3%83%90%E3%83%93%E3%83%AA%E3%83%86%E3%82%A3%E3%83%BB%E3%82%A8%E3%83%B3%E3%82%B8%E3%83%8B%E3%82%A2%E3%83%AA%E3%83%B3%E3%82%B0&qid=1709616659&sr=8-1)
+
+---
+
+まだ、本読んだり作りながら修正している段階...
+だから間違ってる可能性もある！
+
+---
+
+# オブザーバビリティとは？
+
+---
+
+## 予期せぬトラブルを防ぐ仕組み
+
+---
+
+オブザーバビリティ（Observability）とは、「観測する」オブザーブ（Observe）と、「能力」アビリティ（Ability）を組み合わせた複合語で日本語では「可観測性」あるいは「観測する能力」などと訳されます
+
+システム上で何らかの異常が起こった際に、それを通知するだけでなく、どこで何が起こったのか、なぜ起こったのかを把握する能力を表す指標、あるいは仕組みを指します。
+
+---
+
+# 障害が起きた時どうやって原因調査していますか？
+
+---
+
+おそらく
+
+1. アラート検知
+2. ログ確認
+3. ALBのアクセス確認
+4. etc...
+
+---
+
+これだと発生時間でしかエラーと紐付けができない。。。
+ユーザーがどのような操作を行なったかがわからない。。。
+
+---
+
+# 負荷が高い原因調査はどうやってしていますか？
+
+---
+
+おそらく
+
+1. アラート検知
+2. メトリクスを見る
+
+---
+
+なんの処理が原因だったかわからない...
+メトリクスだけでは不十分...
+根本原因がわからない...
+
+---
+
+# 監視を始めるタイミングは？
+
+---
+
+現状だとリリースしてからのみ
+
+---
+
+プロダクトがスケールしていくにつれてどんどんしんどくなる
+
+---
+
+# オブザーバビリティ駆動開発は
+
+---
+
+開発段階からオブザーバビリティを意識した開発を行うことによって事前に原因を把握解消し、
+問題が起きた場合は、一貫性を持って原因調査できるようにするもの
+
+---
+
+でも、そもそも監視の環境を整備するのが大変...
+
+---
+
+# サービス
+
+外部サービスを使って監視しよう！
+
+よく聞くサービスだと
+
+## [Data Dog](https://www.datadoghq.com/ja/?utm_source=google&utm_medium=paid-search&utm_campaign=dg-brand-apac-ja-brand&utm_keyword=data%20dog&utm_matchtype=p&utm_campaignid=8700484236&utm_adgroupid=84283271981&gad_source=1&gclid=CjwKCAiA_5WvBhBAEiwAZtCU73jJa2uznZspaWE8CCxsLXrtVycnhvkgUstojFOx29uiSVQSzgxysRoCqJMQAvD_BwE)
+
+## [New Relic](https://www.dynatrace.com/monitoring/platform/comparison/dynatrace-vs-new-relic/?utm_source=google&utm_medium=cpc&utm_term=why-dynatrace-nr-st&utm_campaign=jp-en-why-dynatrace&utm_content=none&utm_campaign_id=16527149421&gclsrc=aw.ds&gad_source=1&gclid=CjwKCAiA_5WvBhBAEiwAZtCU730pwqu0JCRAErKnKnwjKdQ4c1muT5jZc5jRODgBJnA6CGLYHuamUBoC1kIQAvD_BwE)
+
+---
+
+高い...
+
+---
+
+(会社) 
+使えるかわからないのに導入しづらい...
+ほんとにリターンくるの？
+
+---
+
+# できるだけ安く実現してみよう
+
+---
+
+## 技術スタック
+
+### 計測
+
+- Grafana
+- Grafana Loki
+- OpenTelemetry
+- Jaeger
+- Prometheus
+
+---
+
+### アプリケーション
+
+アプリケーションはTypelevelスタック with tapir
+
+- 言語: Scala 3
+- APIサーバー: Cats Effect 3 x http4s x tapir
+- DB: MySQL x LDBC
+- 計装: Otel4s
+
+
+---
+
+# オブザーバビリティに必要不可欠な3要素とは？
+
+---
+
+## ログ：分析することで、根本原因にたどりつく
+
+ログはOSやミドルウェア、アプリケーションなどから出力されるテキスト情報です。主に障害発生時にこの情報を元に原因究明を行います。
+
+ただし、ログはあくまでも「結果」にすぎません。
+どのようなプロセスを経てこの結果が導かれたのかがわからないので、その結果を正確に再現することが難しい。
+
+---
+
+## メトリクス：数値化された情報
+
+メトリクスは、定期的にグループ化または収集されたデータの集計です。メモリ使用率やCPU使用率、ネットワーク使用率などの情報から「何が起きているのか」を秒単位で検知できるようにするためのもの。
+
+メトリクスデータによって、アプリケーションの動きやハードウェアの稼働状態が可視化でき、システム全体がどのように動いているのかを把握することが可能になる。
+
+---
+
+## トレース：対処するための出発点
+
+トレースは、根本的な原因にいち早くたどりつくために、問題が起こった処理のプロセスを可視化したデータです。トラブルシューティングを行ったり、障害が起こった箇所を特定したりという作業が、これにあたります。
+
+オブザーバビリティでは、システムの構成要素をすべて関連付けて、トレースによって「どこで問題が起こったのか」「どのような処理を行なった結果それが起こったのか」を容易に突き止めることができるようにします。
+
+---
+
+# それぞれどうやって構築しているか
+
+---
+
+## ログ
+
+アプリやサーバで発生している個別のイベント（エラーログ、アクセスログなど）に関しては、現在OpenSearchとKibanaを使用した運用としているがログの確認がしづらいという問題点がある。
+
+またデータベースで発生したログに関してはCloudWatchを確認しており、レイヤーによって確認する箇所が異なっている。
+
+---
+
+### ローカル環境構成図
+
+![](./image/image1.png)
+
+---
+
+### AWS環境構成図
+
+**アプリケーション**
+
+アプリケーションでlog4jなどを使用してログを吐き出し、、サイドカーコンテナでFluent Bitを使用しGrafana Lokiへ送信を行う。
+最終的には、GrafanaでGrafana Lokiのデータを集約する。
+
+![](./image/image2.png)
+
+---
+
+**データベース**
+
+AuroraではCloudWatchへログを吐き出し、GrafanaでCloudWatchのデータを集約する。
+
+![](./image/image3.png)
+
+---
+
+# メトリクス
+
+メトリクスを取得する目的としては、サーバのリソース状況（CPU使用率など）やサービス状況（レイテンシ、トランザクション量、エラーレートなど）といった、特定の時間間隔で測定された数値データを取得することでパフォーマンスチューニングや、ECSやAuroraといったマネージドサービスのスペックを調整するために使用するためです。
+
+---
+
+### ローカル環境構成図
+
+JVMのアプリケーションはJava AgentとJMX Exporterを使用
+別途OpenTelemetryを使用してメトリクスデータを収集
+
+![](./image/image5.png)
+
+---
+
+### AWS環境構成図
+
+ECSで表示されているメトリクスだけではJVM上のアプリケーションがメモリをどのように使用しているか等の情報を正確に収集できない。
+
+そのためJVMのメモリやCPUの監視を行うために、JavaAgentを使用してJMX Exportでメトリクスを吐き出しPrometheusで収集しGrafanaで監視を行う。
+
+![](./image/image6.png)
+
+---
+
+# トレース
+
+トレースを取得する目的としては、共通の管理ツールは複数プロダクトに対して処理を行う。そのためどのプロダクトに対しての処理が重たいのか、そのボトルネックはどこの処理なのかを可視化して調査を容易にするためです。
+
+---
+
+### ローカル環境構成図
+
+アプリケーションでOpenTelemetryを使用したテレメトリデータを収集し、OpenTelemetry Collectorを使用しPrometheusへ送信を行う。
+
+![](./image/image7.png)
+
+---
+
+### AWS環境構成図
+
+アプリケーションでOpenTelemetryを使用したテレメトリデータを吐き出し、サイドカーコンテナでOpenTelemetry Collectorを使用しPrometheusへ送信を行う。
+最終的には、GrafanaでPrometheusのデータを集約する。
+
+![](./image/image8.png)
+
+---
+
+# できたもの
+
+---
+
+## ログ
+
+![](./image/image9.png)
+
+---
+
+![](./image/image10.png)
