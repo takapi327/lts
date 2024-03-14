@@ -16,7 +16,11 @@ Nextbeat
 趣味の箸休めに作ってるサービスの話
 このサービスの構築でマイブームであるオブザーバビリティ駆動開発の嬉しさを語る
 
-[オブザーバビリティ・エンジニアリング](https://www.amazon.co.jp/%E3%82%AA%E3%83%96%E3%82%B6%E3%83%BC%E3%83%90%E3%83%93%E3%83%AA%E3%83%86%E3%82%A3%E3%83%BB%E3%82%A8%E3%83%B3%E3%82%B8%E3%83%8B%E3%82%A2%E3%83%AA%E3%83%B3%E3%82%B0-Charity-Majors/dp/4814400128/ref=sr_1_1?adgrpid=145059206056&dib=eyJ2IjoiMSJ9.mEmr8jYY1Rx4eqIw2RM5hJIxGRwM058pQP6ZmWGTiMiPc2SeOnRs_zHraKTErXyQl6j-m2qCc0huGWdOGGhFMxYMmU0auHPZhVOEqjCjJXIEX4Z5j1qzug-WyBet8udY517gCGvXspf1k15uN059oQ.Gi0FHnU6qbcV0vqBBxYwmJvcY9AvHk-oksbUtWPHsPI&dib_tag=se&gclid=CjwKCAiA_5WvBhBAEiwAZtCU7y3mvg16O8Su8Cm9t5w_WPoikA6Cj9dFWpSYwFX_-fXaGw0uOzSRwBoCp-YQAvD_BwE&hvadid=679073047654&hvdev=c&hvlocphy=1009308&hvnetw=g&hvqmt=e&hvrand=14820850245863278725&hvtargid=kwd-1934908670071&hydadcr=27711_14738816&jp-ad-ap=0&keywords=%E3%82%AA%E3%83%96%E3%82%B6%E3%83%BC%E3%83%90%E3%83%93%E3%83%AA%E3%83%86%E3%82%A3%E3%83%BB%E3%82%A8%E3%83%B3%E3%82%B8%E3%83%8B%E3%82%A2%E3%83%AA%E3%83%B3%E3%82%B0&qid=1709616659&sr=8-1)
+---
+
+# 今日話さないこと
+
+- 使用している技術の説明
 
 ---
 
@@ -46,7 +50,7 @@ Nextbeat
 まずはじめに、「可観測性」と「監視」は別物です。
 
 「監視」は既知の問題に対処します。
-メトリックを設定して特定の問題が発生したときに検知します。
+メトリクスを設定して特定の問題が発生したときに検知します。
 
 「可観測性」は未知の問題に対処します。
 カーディナリティが高く高次元の構造化されたテレメトリデータにより、探索的に問題の発生地点にたどり着くことができます。
@@ -328,7 +332,24 @@ ECSで表示されているメトリクスだけではJVM上のアプリケー�
 
 ---
 
+ハイパーメニーメニートゥーリッチローカル開発環境
+
+---
+
 デモ
+
+[Grafana](http://localhost:3000/?orgId=1)
+
+1. アプリケーションログの確認
+2. データベースログの確認
+3. 独自メトリクスの確認
+4. トレースの確認
+5. ログとトレースの組み合わせ
+6. JVMの監視
+
+---
+
+ハイパーメニーメニートゥーリッチローカル開発環境
 
 ---
 
@@ -336,21 +357,30 @@ ECSで表示されているメトリクスだけではJVM上のアプリケー�
 
 ---
 
-AWSにはハンズオンもあるよ！
-
-https://catalog.workshops.aws/observability/ja-JP
+- オブザーバビリティは作って終わり、導入して終わりではない
+  - 導入しただけでは意味がない
+  - 日々改修する必要がある
+- 構築はインフラだけでもアプリケーションだけでも無理
+  - 対応は両方を考慮して行う必要がある
+- 小さなプロジェクトでは効力は少ないが大きくなってからでは少し遅い
+  - 変化がわからないから
+  - 組み込むのも大変
 
 ---
 
-銀の弾丸でもなんでもない
+自分もまだまだ今までの監視にトレースを追加した程度のレベル
 
-作って終わりではない
+---
 
-日々改修する必要がある
+オブザーバビリティ駆動開発を考える会
+(with Effect System？)
 
-インフラだけでも無理
-アプリケーションだけでも無理
+---
 
-対応は両方を考慮して行う必要がある
+この本がオススメ！
 
-導入しただけでは意味がない
+[オブザーバビリティ・エンジニアリング](https://www.amazon.co.jp/%E3%82%AA%E3%83%96%E3%82%B6%E3%83%BC%E3%83%90%E3%83%93%E3%83%AA%E3%83%86%E3%82%A3%E3%83%BB%E3%82%A8%E3%83%B3%E3%82%B8%E3%83%8B%E3%82%A2%E3%83%AA%E3%83%B3%E3%82%B0-Charity-Majors/dp/4814400128/ref=sr_1_1?adgrpid=145059206056&dib=eyJ2IjoiMSJ9.mEmr8jYY1Rx4eqIw2RM5hJIxGRwM058pQP6ZmWGTiMiPc2SeOnRs_zHraKTErXyQl6j-m2qCc0huGWdOGGhFMxYMmU0auHPZhVOEqjCjJXIEX4Z5j1qzug-WyBet8udY517gCGvXspf1k15uN059oQ.Gi0FHnU6qbcV0vqBBxYwmJvcY9AvHk-oksbUtWPHsPI&dib_tag=se&gclid=CjwKCAiA_5WvBhBAEiwAZtCU7y3mvg16O8Su8Cm9t5w_WPoikA6Cj9dFWpSYwFX_-fXaGw0uOzSRwBoCp-YQAvD_BwE&hvadid=679073047654&hvdev=c&hvlocphy=1009308&hvnetw=g&hvqmt=e&hvrand=14820850245863278725&hvtargid=kwd-1934908670071&hydadcr=27711_14738816&jp-ad-ap=0&keywords=%E3%82%AA%E3%83%96%E3%82%B6%E3%83%BC%E3%83%90%E3%83%93%E3%83%AA%E3%83%86%E3%82%A3%E3%83%BB%E3%82%A8%E3%83%B3%E3%82%B8%E3%83%8B%E3%82%A2%E3%83%AA%E3%83%B3%E3%82%B0&qid=1709616659&sr=8-1)
+
+AWSにはハンズオンもあるよ！
+
+https://catalog.workshops.aws/observability/ja-JP
