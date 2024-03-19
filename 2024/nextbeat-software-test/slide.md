@@ -178,6 +178,7 @@ SHA-2 プラガブル認証のキャッシュを使用する場合、キャッ�
 - MySQLサーバーデフォルトの認証プラグイン3種類
 - クライアント側の認証プラグイン3種類
 - `caching_sha2_password`は上記組み合わせ x 2(キャッシュの有無)
+  - MySQL 5.7では`caching_sha2_password`はサポートされていない
 
 これらを全て組み合わせた環境が必要
 
@@ -189,10 +190,7 @@ SHA-2 プラガブル認証のキャッシュを使用する場合、キャッ�
 |`mysql_native_password`|5.7|❌||
 |`sha256_password`|5.7|✅||
 |`sha256_password`|5.7|❌||
-|`caching_sha2_password`|5.7|✅|❌|
-|`caching_sha2_password`|5.7|❌|❌|
-|`caching_sha2_password`|5.7|✅|✅|
-|`caching_sha2_password`|5.7|❌|✅|
+|`caching_sha2_password`|サポート対象外|||
 
 ---
 
@@ -277,13 +275,9 @@ Dockerコンテナは、2つの異なるエンティティを通じて表現さ�
     mysqlContainer
   }
 ```
-`withInitScript`を使えば起動時に指定した処理を実行してくれる。
 
-これで追加のUser情報などの処理をしてあげれば良い
+※ 追加のUser情報作成などはTestcontainersの拡張が必要
 
-```scala
-mysqlContainer.container.withInitScript("実行したいsqlファイルへのパス")
-```
 ---
 
 `withContainers`を使用することでテストで使用しているコンテナのエンティティを使用できる
