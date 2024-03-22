@@ -287,7 +287,7 @@ Dockerコンテナは、2つの異なるエンティティを通じて表現さ�
 こんな感じ
 
 ```scala
-class Test extends TestContainerForEach {
+class Test extends TestContainerForAll {
   override val containerDef = MySQLContainer.Def(
     dockerImageName = DockerImageName.parse("mysql:8.0.33"),
     databaseName = "...",
