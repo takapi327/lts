@@ -2,7 +2,7 @@
 marp: true
 ---
 
-# Tetcontainersが便利だった
+# Testcontainersが便利だった
 
 第一回ソフトウェアテストについて考える会
 2024/03/22 (金)
