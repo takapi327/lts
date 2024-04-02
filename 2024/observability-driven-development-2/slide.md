@@ -190,6 +190,8 @@ Nodeは`@opentelemetry/xxx`のパッケージを複数組み合わせて使う
 
 [@opentelemetry/sdk-trace-node](https://github.com/open-telemetry/opentelemetry-js/tree/main/packages/opentelemetry-sdk-trace-node)を使用した自動計装の設定
 
+---
+
 - トレース/メトリクス情報を`OpenTelemetry Collector`に送信
 - プラグインを使用してHttpリクエストの計装/Expressの計装を行う
 - `sdk.start()`で計装を開始
@@ -226,5 +228,136 @@ CMD ["node", "--require", "./instrumentation.cjs", "./server.js"]
 ---
 
 ![](./image/image3.png)
+
+---
+
+これでフロントエンドの情報もGrafanaで見れるようになった！
+
+---
+
+でもまだ課題がある
+
+---
+
+
+これだとフロントエンドとバックエンドの処理の紐付きがわからない...
+フロントエンドで呼ばれたバックエンドの情報はAPIを呼んだであろう時間をもとに探さないといけない...
+大量の情報から探し出すのは困難...
+ここに時間がかかる = 障害復旧時間が長くなる
+手間がかかるというイメージは日々見るということを遠ざける...
+
+---
+
+`OpenTelemetry`には`SpnaLinks`という`Span`情報を関連づける機能がある！
+
+これを使えばフロントエンドとバックエンドのテレメトリデータを関連づけられる！
+
+---
+
+アプリケーションの流れとしてフロントエンドがまず呼ばれてその後バックエンドが呼ばれる
+
+つまりテレメトリデータもフロントエンドからバックエンドへ流れていく
+
+なので、何かしらの方法でフロントエンドからバックエンドへテレメトリデータの受け渡しを行う
+
+フロントエンドとバックエンドの連携はAPIリクエストを通して行われるので、そのAPIリクエストにテレメトリデータを付与する
+
+---
+
+## APIクライアントは自動生成してるけどどうする？
+
+APIクライアントはZod x Zodiosを使用している
+
+---
+
+Zodiesは独自にプラグインを作成して組み込むことが可能
+
+https://www.zodios.org/docs/client/plugins
+
+---
+
+APIリクエスト時にトレースが開始されていた場合にそのトレース情報をヘッダー情報に組み込むようにプラグインを作成
+
+---
+
+```typescript
+export const tracerPlugin = (): ZodiosPlugin => {
+  return {
+    name:    'settingTraceHeaders',
+    request: (
+      api: ZodiosEndpointDefinitions,
+      config: ReadonlyDeep<AnyZodiosRequestOptions>
+    ): Promise<ReadonlyDeep<AnyZodiosRequestOptions>> => {
+      const currentSpan = trace.getSpan(context.active())
+      if (currentSpan) {
+        const traceId = currentSpan.spanContext().traceId
+        const traceFlags = currentSpan.spanContext().traceFlags
+        const spanId = currentSpan.spanContext().spanId
+
+        const newHeaders = {
+          ...config.headers,
+          'X-B3-TraceId':      traceId,
+          'X-B3-ParentSpanId': spanId,
+          'X-B3-TraceFlags':   traceFlags.toString()
+        }
+
+        return Promise.resolve({
+          ...config,
+          headers: newHeaders
+        })
+      } else {
+        return Promise.resolve(config)
+      }
+    }
+  }
+}
+```
+
+---
+
+バックエンドではヘッダー情報からトレース情報を取得する
+
+```scala
+val contextOpt: Option[SpanContext] =
+  for
+    traceId    <- req.headers.get(CIString("X-B3-TraceId"))
+    traceFlags <- req.headers.get(CIString("X-B3-TraceFlags"))
+    spanId     <- req.headers.get(CIString("X-B3-ParentSpanId"))
+  yield SpanContext(
+    ByteVector.fromValidHex(traceId.head.value),
+    ByteVector.fromValidHex(spanId.head.value),
+    TraceFlags.fromByte(traceFlags.head.value.toByte),
+    TraceState.empty,
+    true
+  )
+```
+
+---
+
+あとはあればLinkを設定すれば完了
+
+```scala
+contextOpt
+  .fold(builder)(builder.addLink)
+  .build
+```
+
+---
+
+しかし、リンク情報は表示されない...
+
+---
+
+調べたらJaegerがサポートしてなかった...
+
+---
+
+仕方ないので、リンクではなく親子関係を組むことに
+
+```scala
+contextOpt
+  .fold(builder)(builder.withParent)
+  .build
+```
 
 ---
