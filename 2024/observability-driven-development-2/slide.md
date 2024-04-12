@@ -80,6 +80,20 @@ OpenAPI仕様書からZodiosとZodを使用したAPIクライアントを生成�
 
 ---
 
+クライアントの生成はAPIサーバーからyamlファイルを返すようにしているので、そこから生成するようにしました。
+
+- yamlファイルをGit管理すると差分が多くなるし邪魔になる。
+- API自体はtapirのコード見たらわかる
+- OpenAPIのドキュメントを見たかったらドキュメントを公開しているエンドポイントにアクセスしたら見れる (http://localhost:8080/api/v1/docs)
+
+```shell
+pnpm openapi-zod-client http://localhost:8080/api/v1/docs/docs.yaml -o src/lib/shared/api/generated/api-client.ts
+```
+
+運用して必要だったらyaml管理するかも
+
+---
+
 ## 何が嬉しいのか？
 
 - バックエンドとフロントエンドの型が一致
