@@ -25,6 +25,11 @@ Nextbeat
 
 ---
 
+![](./image/image.png)
+[引用](https://speakerdeck.com/k6s4i53rx/otel-trace-exemplar?slide=9)
+
+---
+
 ハイパーメニーメニートゥーリッチローカル開発環境
 
 ---
@@ -32,7 +37,7 @@ Nextbeat
 # 今日は何を話す？　
 
 - フロントエンドとバックエンドの型安全性
-- フロントエンドとバックエンドで言語が異なる時のモノレポ
+- フロントエンドとバックエンドで言語が異なる時のモノレポ (笑)
 - フロントエンドでの可観測性
 - フロントエンドとバックエンドの可観測性
 
@@ -188,7 +193,7 @@ Nodeは`@opentelemetry/xxx`のパッケージを複数組み合わせて使う
 
 ---
 
-[@opentelemetry/sdk-trace-node](https://github.com/open-telemetry/opentelemetry-js/tree/main/packages/opentelemetry-sdk-trace-node)を使用した自動計装の設定
+[@opentelemetry/sdk-trace-node](https://github.com/open-telemetry/opentelemetry-js/tree/main/packages/opentelemetry-sdk-trace-node)を使用してテレメトリデータの収集を行う
 
 ---
 
@@ -198,7 +203,7 @@ Nodeは`@opentelemetry/xxx`のパッケージを複数組み合わせて使う
 
 ```javascript
 const sdk = new NodeSDK({
-  serviceName: 'management-tool-ui',
+  resource: resource,
   traceExporter: new OTLPTraceExporter({
     url: process.env.OTEL_COLLECTOR_URL || 'http://otel-collector:4317'
   }),
@@ -208,9 +213,11 @@ const sdk = new NodeSDK({
     }),
   }),
   instrumentations: [
-    getNodeAutoInstrumentations(),
-    new HttpInstrumentation(),
-    new ExpressInstrumentation()
+    new HttpInstrumentation({
+      requestHook: (span, request) => {
+        span.updateName(`${request.method} ${request.url}`)
+      }
+    })
   ],
 })
 
@@ -315,6 +322,18 @@ export const tracerPlugin = (): ZodiosPlugin => {
 
 ---
 
+SvelteKitの`hooks.server.ts`でクライアント生成時に有効化しておく
+
+```ts
+export const handle = sequence(async ({ event, resolve }) => {
+  event.locals.api = createApiClient(env.PUBLIC_API_SERVER_URL)
+  event.locals.api.use(tracerPlugin())
+  return resolve(event)
+})
+```
+
+---
+
 バックエンドではヘッダー情報からトレース情報を取得する
 
 ```scala
@@ -361,3 +380,21 @@ contextOpt
 ```
 
 ---
+
+# できたもの
+
+---
+
+# 次は
+
+- トレースとメトリクスの関連付け
+  - トレースエグザンプラー
+- フロントエンドのテレメトリデータ充実
+- フロントxバックの関連付けがやっぱり微妙？なのでJaegerから別のものを検討？
+
+---
+
+最近オブザーバビリティに関するイベント増えてきた？印象なので参加してみると良いかも
+
+3日前ぐらいのイベントも良かった
+[OpenTelemetry Observability運用の実例 Lunch LT](https://findy.connpass.com/event/313260/)
