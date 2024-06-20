@@ -1,5 +1,7 @@
 {
   "name": "lts",
+  "version": "0.0.1",
+  "description": "LTなど登壇使用をまとめるためのレポジトリ",
   "type": "module",
   "private": true,
   "scripts": {
@@ -7,6 +9,7 @@
     "dev": "slidev --open",
     "export": "slidev export"
   },
+  "packageManager": "pnpm@8.13.1",
   "dependencies": {
     "@slidev/cli": "^0.49.11",
     "@slidev/theme-default": "latest",
