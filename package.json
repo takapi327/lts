@@ -8,8 +8,8 @@
     "build": "slidev build",
     "dev": "slidev --open",
     "export": "slidev export",
-    "start:nextbeat-databae": "slidev --open ./2024/nextbeat-database/slide.md",
-    "build:nextbeat-databae": "slidev build --base ./2024/nextbeat-database/slide.md"
+    "start:nextbeat-database": "slidev --open ./2024/nextbeat-database/slide.md",
+    "build:nextbeat-database": "slidev build --base ./2024/nextbeat-database/slide.md"
   },
   "packageManager": "pnpm@8.13.1",
   "dependencies": {
