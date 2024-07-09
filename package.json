@@ -1,7 +1,7 @@
 {
   "name": "lts",
   "version": "0.0.1",
-  "description": "LTなど登壇使用をまとめるためのレポジトリ",
+  "description": "登壇資料をまとめるためのレポジトリ",
   "type": "module",
   "private": true,
   "scripts": {
