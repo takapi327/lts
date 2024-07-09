@@ -1,0 +1,40 @@
+name: Deploy pages
+
+on:
+  workflow_dispatch:
+    inputs:
+      slide:
+        type: choice
+        description: 'Slide name'
+        required: true
+        options:
+          - 'nextbeat-database'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Corepack
+        run: corepack enable pnpm
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.node-version'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build:${{ inputs.slide }}
+
+      - name: Deploy pages
+        uses: crazy-max/ghaction-github-pages@v2
+        with:
+          build_dir: dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
