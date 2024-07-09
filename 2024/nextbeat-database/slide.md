@@ -70,6 +70,8 @@ Scalaは現在JVM, JS, Nativeというマルチプラットフォームに対応
 そのためMySQLプロトコルに対応したプレーンなScalaで書かれたコネクタを提供(こちらはまだ誠意開発中)することで、異なるプラットフォームで動作できるようにするために開発を行っています。
 
 ---
+layout: center
+---
 
 ## 要は...
 
@@ -1006,4 +1008,209 @@ MySQLのような広く使われているようなデータベースは、多く
 
 ---
 
-工事中...
+### まずは
+
+ScalaはJDBCを使ってMySQLサーバーと通信するので、mysql-connector-javaを使って通信しているデータを見てみる。
+
+まずはここから！
+
+```scala
+//> using scala "3.3.3"
+//> using dep mysql:mysql-connector-java:8.0.33
+
+val dataSource = new MysqlDataSource()
+dataSource.setServerName("127.0.0.1")
+dataSource.setPortNumber(3306)
+dataSource.setUser("username")
+dataSource.setPassword("password")
+dataSource.setUseSSL(false) // v8 (caching_sha2_password) 使用の場合
+dataSource.setAllowPublicKeyRetrieval(true) // v8 (caching_sha2_password) 使用の場合
+
+// 接続
+val connection = dataSource.getConnection
+```
+
+※ [Scala CLI](https://scala-cli.virtuslab.org/)を使用
+
+```shell
+scala-cli mysql-connector.sc
+```
+
+---
+
+先ほどと同じようにngrepでパケットを監視してみると...
+
+```shell
+T 127.0.0.1:13306 -> 127.0.0.1:59433 [AP] #5
+  4a 00 00 00 0a 38 2e 30    2e 33 33 00 79 0a 00 00    J....8.0.33.y...
+  4b 3d 5f 7f 66 71 40 68    00 ff ff ff 02 00 ff df    K=_.fq@h.���..��
+  15 00 00 00 00 00 00 00    00 00 00 54 45 45 19 59    ...........TEE.Y
+  63 0f 63 18 27 76 07 00    63 61 63 68 69 6e 67 5f    c.c.'v..caching_
+  73 68 61 32 5f 70 61 73    73 77 6f 72 64 00          sha2_password.
+```
+
+先ほどと同じ形式でデータが送られてきていることがわかる
+
+---
+
+送られたデータに対して、MySQLドライバーはこのようなデータを送信していることがわかる
+
+```shell
+T 127.0.0.1:59433 -> 127.0.0.1:13306 [AP] #7
+  e0 00 00 01 07 a2 3e 19    ff ff ff 00 ff 00 00 00    �....�>.���.�...
+  00 00 00 00 00 00 00 00    00 00 00 00 00 00 00 00    ................
+  00 00 00 00 6c 64 62 63    00 20 1c ea ae b9 6a bd    ....ldbc. .ꮹj�
+  3c cd 06 dc 21 7a 98 53    6c 6b 6e 82 49 bc d7 44    <�.�!z.Slkn.I��D
+  d1 2d 42 7c f7 28 f5 f5    61 5a 63 61 63 68 69 6e    �-B|�(��aZcachin
+  67 5f 73 68 61 32 5f 70    61 73 73 77 6f 72 64 00    g_sha2_password.
+  83 10 5f 72 75 6e 74 69    6d 65 5f 76 65 72 73 69    .._runtime_versi
+  6f 6e 07 31 31 2e 30 2e    31 37 0f 5f 63 6c 69 65    on.11.0.17._clie
+  6e 74 5f 76 65 72 73 69    6f 6e 06 38 2e 30 2e 33    nt_version.8.0.3
+  33 0f 5f 63 6c 69 65 6e    74 5f 6c 69 63 65 6e 73    3._client_licens
+  65 03 47 50 4c 0f 5f 72    75 6e 74 69 6d 65 5f 76    e.GPL._runtime_v
+  65 6e 64 6f 72 0f 41 6d    61 7a 6f 6e 2e 63 6f 6d    endor.Amazon.com
+  20 49 6e 63 2e 0c 5f 63    6c 69 65 6e 74 5f 6e 61     Inc.._client_na
+  6d 65 11 4d 79 53 51 4c    20 43 6f 6e 6e 65 63 74    me.MySQL Connect
+  6f 72 2f 4a                                           or/J
+```
+
+つまり...
+
+<p v-click>
+  これが答え！
+</p>
+
+---
+
+MySQLドライバーの返答に対して、MySQLサーバーはこのようなデータを返している
+
+```shell
+T 127.0.0.1:13306 -> 127.0.0.1:59433 [AP] #9
+  02 00 00 02 01 03                                     ......
+
+T 127.0.0.1:13306 -> 127.0.0.1:59433 [AP] #11
+  07 00 00 03 00 00 00 02    00 00 00                   ...........
+  
+  ...
+```
+
+つまり...
+
+<p v-click>
+  ここでハンドシェイクが完了していることがわかる！
+  ※ MySQLでは正常系の形式が決まっておりこれはその正常系の形式
+</p>
+
+<p v-click>
+  まずはMySQLサーバーからこれが帰ってくるのを目指す！
+</p>
+
+---
+layout: two-cols
+---
+
+> 送られたデータに対して、MySQLドライバーはこのようなデータを送信していることがわかる
+
+送信するパケットの形式も決まっており、ドキュメントに記載されている
+
+[Protocol::HandshakeResponse](https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_connection_phase_packets_protocol_handshake_response.html#sect_protocol_connection_phase_packets_protocol_handshake_response41)
+
+読み方はMySQLサーバーから受け取るパケットの形式と同じ！
+
+::right::
+
+<p style="text-align: center">※ 一部のみ表示</p>
+
+<img src="/HANDSHAKE_RESPONSE_41.png" class="rounded shadow" style="height: 400px; position: absolute; bottom: 70px; right: 10%">
+
+---
+
+先ほどと同じような手法をとっていく
+
+1. パケットの形式を確認
+2. AIを使ってコードを生成
+
+これを繰り返していくことで、MySQLサーバーと通信するためのコードができていく！
+
+---
+layout: center
+---
+
+## 作って良かったこと、変わったこと
+
+---
+
+### 良かったこと
+
+- データベースをわかった気になれる
+  - データベースクライアントを作ることでデータベースの通信周りの仕組みがわかる
+- JDBC(自分の普段触っている言語のデータベース周り)に詳しくなった気になれる
+  - MySQLサーバーと通信していると思っていたメソッドが実は通信していなかったり
+  - 自分の想定していた処理と違っていたり
+  - etc...
+- どんな処理でもパフォーマンスを考えるようになった (これがなんとなくわかるようになった)
+  - 適当に書くとものすごく遅くなる
+
+<p v-click>
+  単純な話自信がつく
+</p>
+
+<p v-click>
+  自信がついてくると、他のことにも挑戦しやすくなる
+</p>
+
+---
+
+### 変わったこと
+
+- 何かエラーが起きたらパケットのやり取りを見にいくようになった
+- データベースがシンプルに見えるようになった
+- データベースのクライアントとライブラリのコードを読めるようになった (触ったことない言語でも)
+  - 言語によってパケットの処理方法が違っていて面白い
+- データベースのリリースノートなどの更新内容を前よりも理解しながら読めるようになった
+  - 変更箇所がコードにどのような影響を及ぼすかをイメージしやすくなった
+
+---
+
+## 今後やりたいこと
+
+- 他のデータベースのクライアントを作ってみたい
+  - (JDBCは共通のインターフェースを提供しているため同じような感じで...)
+- データベースそのものを作ってみたい
+- 新しい言語でデータベースクライアントを作ってみたい
+
+時間の関係で実際のパケット受信、送信までの説明はできなかった...
+
+今回は通信の監視方法、パケットの見方をメインに話しましたが、次回があって需要があればパケット送信の仕方、データの処理方法などを話していきたい
+
+---
+
+## まとめ
+
+データベースクライアントを作る時は...
+
+<p v-click>
+  1. データベースとの通信を見ましょう
+</p>
+
+<p v-click>
+  2. AIを使ってコードを生成しましょう
+</p>
+
+<p v-click>
+  3. 既存ライブラリの通信をカンニングしましょう
+</p>
+
+<p v-click>
+  4. 1 ~ 3を繰り返しましょう
+</p>
+
+<p v-click>
+  どんなことでもコツコツ積み上げて行けば大きなものができていく！
+</p>
+
+---
+layout: center
+---
+
+## ご清聴ありがとうございました！
