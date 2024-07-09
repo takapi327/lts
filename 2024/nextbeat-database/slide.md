@@ -22,6 +22,26 @@ class: 'text-center'
 
 MySQLのクライアント作成の時の話ですが、他のデータベースでも同じようなことが言えるかもしれません。
 
+自分が初めて作成した時の知見を元に発表を行いますので、資料に間違った情報があるかもしれませんがご了承ください。
+
+間違っている箇所や、もっとこうした方が良いなどありましたら教えてください！
+
+---
+
+## 自己紹介
+
+名前: 富永 孝彦 (とみなが たかひこ)
+
+- 所属: 株式会社 Nextbeat
+- SNS
+  - X: @takapi327
+  - Github: https://github.com/takapi327
+
+- 趣味
+  - OSS開発やコントリビュート、OSSのコード読む
+  - プログラミングに関する情報収集
+  - ゲーム
+
 ---
 
 ## なぜこの話を？
@@ -71,8 +91,17 @@ Scalaは現在JVM, JS, Nativeというマルチプラットフォームに対応
 
 なぜ通信の監視を行うと良いのか？
 
-- パケットの見方を覚える
-- 答え合わせを行いながら開発できる
+<p v-click>
+パケットの見方を覚える
+</p>
+
+<p v-click>
+答え合わせを行いながら開発できる
+</p>
+
+<p v-click>
+ではそのパケットを見る方法をみていきましょう
+</p>
 
 ---
 
@@ -87,6 +116,38 @@ brew install ngrep
 ```
 
 ※ 他にも色々なツールがあるので、自分に合ったものを選ぶと良いです。
+
+---
+
+# ngrepの使用方法
+
+```shell
+sudo ngrep -x -q -d lo0 '' 'port 3306'
+```
+
+<p v-click style="font-size: 12px">
+<strong>`-x`</strong>: キャプチャしたパケットのデータ部分を16進数（hex）形式で表示します。各バイトが2桁の16進数で表示され、可読なASCII文字が表示されます。
+</p>
+
+<p v-click style="font-size: 12px">
+<strong>`-q`</strong>: 出力の際にパケットのデータ部分のみを表示し、その他の情報（ヘッダ情報など）を抑制します。これは「クワイエットモード」（quiet mode）として知られています。
+</p>
+
+<p v-click style="font-size: 12px">
+<strong>`-d`</strong>: デバイスを指定します。ここでは`lo0`を指定しています。`lo0`はループバックインターフェースを指しています。ループバックインターフェースは、ローカルホスト（`127.0.0.1`）との通信を行うために使用されます。
+</p>
+
+<p v-click style="font-size: 12px">
+<strong>`''`</strong>: フィルタ条件として空の文字列を指定しています。これは、特定の内容に関するフィルタリングを行わないことを意味します。すべてのパケットをキャプチャ対象とする場合に使用されます。
+</p>
+
+<p v-click style="font-size: 12px">
+<strong>`'port 3306'`</strong>: キャプチャ対象のパケットをTCPまたはUDPのポート番号`3306`に限定します。この場合、MySQLデータベースが通常使用するポート番号3306に対するパケットがキャプチャ対象となります。
+</p>
+
+<p v-click>
+このコマンドは、MySQLサーバーへのすべてのトラフィック（ループバックインターフェース経由で送受信されるもの）を16進数形式で表示し、ヘッダ情報を抑制した形で出力します。
+</p>
 
 ---
 
@@ -256,6 +317,9 @@ T 127.0.0.1:3306 -> 127.0.0.1:56281 [AP] #5
 
 データベースごとにドキュメントが存在しているので、それを参照することでパケットの内容を理解することができる。
 
+※ MySQL v8から通信方式がSSL前提になっているので、パケットを表示しても暗号化されて解読できなくなっています。
+なので、v8を使用する場合は、認証プラグインを`native_password`に変更するか、SSLを無効にすることで解読できるようになります。
+
 ---
 
 ## MySQL
@@ -346,7 +410,7 @@ layout: two-cols
 
 ---
 
-#### 固定長整数 ([Protocol::FixedLengthInteger](https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_basic_dt_integers.html#a_protocol_type_int1))
+#### `int<number>`: 固定長整数 ([Protocol::FixedLengthInteger](https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_basic_dt_integers.html#a_protocol_type_int1))
 
 固定長整数は、値を固定されたバイト数で表現するためのデータ型です。
 
@@ -387,6 +451,8 @@ MySQLプロトコルでは、以下のような固定長の符号なし整数の
 - シーケンスID: int<1>
 
 <img src="/PAYLOAD_PROTOCOL.png" class="rounded shadow">
+
+※ `string<var>`はペイロードの値全てなので、後で分解して説明
 
 ---
 
@@ -440,7 +506,7 @@ T 127.0.0.1:3306 -> 127.0.0.1:56281 [AP] #5
 
 ---
 
-#### NULL終端文字列 ([Protocol::NullTerminatedString](https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_basic_dt_strings.html#sect_protocol_basic_dt_string_null))
+#### `string<NULL>`: NULL終端文字列 ([Protocol::NullTerminatedString](https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_basic_dt_strings.html#sect_protocol_basic_dt_string_null))
 
 MySQLプロトコルでは、文字列のデータをエンコードする際にいくつかの方法があります。その中でも、`string<NULL>`は、特定の方法で終端された文字列のことを指します。
 
@@ -467,7 +533,7 @@ NULL終端は、文字列の長さを事前に知らなくても、文字列の�
 
 ---
 
-#### 固定長文字列 ([Protocol::FixedLengthString](https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_basic_dt_strings.html#sect_protocol_basic_dt_string_fix))
+#### `string[number]`: 固定長文字列 ([Protocol::FixedLengthString](https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_basic_dt_strings.html#sect_protocol_basic_dt_string_fix))
 
 `string[number]`とは、固定長の文字列で、事前に決められた長さを持つ文字列のことです。文字列の長さは予め決まっており、これが固定されています。
 
@@ -486,7 +552,7 @@ MySQLプロトコルの中で、ERR_PacketのSQLステートは常に5バイト�
 
 ---
 
-#### 可変長文字列 ([Protocol::LengthEncodedString](https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_basic_dt_strings.html#sect_protocol_basic_dt_string_le))
+#### `$length`: 可変長文字列 ([Protocol::LengthEncodedString](https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_basic_dt_strings.html#sect_protocol_basic_dt_string_le))
 
 `$length`とは、文字列の先頭にその文字列の長さを表すエンコードされた整数が付加される形式の文字列です。これにより、文字列の長さを事前に知ることができます。
 
@@ -632,9 +698,49 @@ T 127.0.0.1:3306 -> 127.0.0.1:56281 [AP] #5
 
 ---
 
-### 認証プラグインのランダムデータの長さ: `int<1>`
+### 認証プラグインのランダムデータ1: `string<8>`
 
 つまり
+
+```shell
+T 127.0.0.1:3306 -> 127.0.0.1:56281 [AP] #5
+  4a 00 00 00 0a 38 2e 30    2e 33 33 00 9b 19 00 00    J....8.0.33.....
+  69 26 73 2a 75 08 1c 2c    00 ff ff ff 02 00 ff df    i&s*u..,.���..��
+  15 00 00 00 00 00 00 00    00 00 00 63 01 02 01 2e    ...........c....
+  3e 45 23 57 31 7f 5b 00    63 61 63 68 69 6e 67 5f    >E#W1.[.caching_
+  73 68 61 32 5f 70 61 73    73 77 6f 72 64 00          sha2_password.
+```
+
+<div v-click class="absolute top-43 left-29 w-43 border-2 border-red-500 p-2"></div>
+<div v-after class="absolute top-43 left-126 h-4 w-30 border-2 border-red-500 p-2"></div>
+<svg v-after xmlns="http://www.w3.org/2000/svg" class="absolute top-48 left-28 h-8 w-8 text-red-500 transform rotate-180" viewBox="0 0 20 20" fill="currentColor">
+  <path fill-rule="evenodd" d="M10 2a1 1 0 0 1 1 1v10.586l3.293-3.293a1 1 0 1 1 1.414 1.414l-5 5a1 1 0 0 1-1.414 0l-5-5a1 1 0 1 1 1.414-1.414L9 13.586V3a1 1 0 0 1 1-1z" clip-rule="evenodd" />
+</svg>
+
+<p v-after>
+  この8桁が認証プラグインのランダムデータ1を示しています。
+</p>
+
+
+---
+
+### 認証プラグインのランダムデータ2の長さ: `$length`
+
+`$length`は、可変長文字列を示すデータ型で最初に長さを示す整数が付加される形式の文字列でした。
+
+ここでドキュメントを見てみると...
+
+<img src="/AUTH_PLUGIN_DATA_LENGTH.png" class="rounded shadow" v-click>
+
+<p v-click>
+  ランダムデータ2の長さは、どの条件でも`int<1>`で表現されると書いてある。
+</p>
+
+---
+
+### 認証プラグインのランダムデータ2の長さ: `int<1>`
+
+つまり (※ 先ほどからの間にあるパケットは省略しています)
 
 ```shell
 T 127.0.0.1:3306 -> 127.0.0.1:56281 [AP] #5
@@ -695,7 +801,7 @@ T 127.0.0.1:3306 -> 127.0.0.1:56281 [AP] #5
 </svg>
 
 <p v-after>
-  この13このデータが認証プラグインのランダムデータを示しています。
+  この範囲(13)のデータが認証プラグインのランダムデータを示しています。
 </p>
 
 <p v-after>
@@ -709,7 +815,11 @@ T 127.0.0.1:3306 -> 127.0.0.1:56281 [AP] #5
 読み方がわかればそんなに難しくないと思いませんか？
 
 <p v-click>
-  読めるようになってもどうやってコードに落とし込むかわからない...
+  数字と文字列の読み方がわかれば他のデータも大体読めるようになります。
+</p>
+
+<p v-click>
+  でも...読めるようになってもどうやってコードに落とし込むかわからない...
 </p>
 
 <p v-click>
@@ -720,6 +830,8 @@ T 127.0.0.1:3306 -> 127.0.0.1:56281 [AP] #5
   そもそもどうやってデータを取得するのかわからない...
 </p>
 
+---
+layout: center
 ---
 
 ## AIを使おう！
@@ -809,6 +921,13 @@ Sequence ID: 0
   雑に投げるだけでもAIがコードを生成してくれるので、わからなくてもこれを下敷きにして進めていけばいい！
 </p>
 
+<p v-click>
+  今ならclaudeとか他のモデルもあるし、プロンプトを丁寧に書けばもっといいコードが生成されるかもしれない！
+</p>
+
+<p v-click>
+  AIにいい感じに生成してもらうために調べて伝えるということをやっていると自然と身についていく！
+</p>
 
 <p v-click>
   あとは同じように他の項目もデコードしていき組み合わせていけば、MySQLサーバーと通信するためのコードができていきます。
@@ -821,6 +940,10 @@ Sequence ID: 0
 コードを書いたとしても本当に正しいのかわからない...
 
 <p v-click>
+  AIは間違ったことを教えてくれることがある...
+</p>
+
+<p v-click>
 リトルエンディアンとビッグエンディアンの違いで取得方法が間違っていてもデータの取得ができてしまう...
 </p>
 
@@ -828,13 +951,15 @@ Sequence ID: 0
 間違ったデータを扱っていると、どこで間違ったのかがわからない...
 </p>
 
-<p v-click>
-既にあるライブラリで答え合わせをしよう！
-</p>
+---
+layout: center
+---
+
+## 既存ライブラリでカンニングしよう！
 
 ---
 
-### 答え合わせとは？
+### カンニングとは？
 
 MySQLのような広く使われているようなデータベースは、多くのライブラリが存在しています。
 
@@ -844,11 +969,29 @@ MySQLのような広く使われているようなデータベースは、多く
 
 ---
 
-## 実際に答え合わせを行う
+## 実際にカンニングを行う
 
-ngrepで監視できる状態ができた。パケットの見方も大体わかる。
+準備は何が必要か？
 
-MySQLサーバーを起動して、既存ライブラリとの通信内容を確認すればいい！
+<p v-click>
+  準備はもうできている！
+</p>
+
+<p v-click>
+  ngrepでパケットを監視できる！
+</p>
+
+<p v-click>
+  パケットの見方も大体わかる！
+</p>
+
+<p v-click>
+  MySQLサーバーを起動して、既存ライブラリとの通信内容を確認すればいい！
+</p>
+
+---
+
+### 何をみるのか？
 
 - どのような順番でデータがやり取りされているか
 - どのようにエンコードしてサーバーにデータを送信すれば良いか
