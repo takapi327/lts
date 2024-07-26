@@ -10,3 +10,5 @@ components.d.ts
 # for Scala CLI
 .bsp
 .scala-build
+
+*.pdf
