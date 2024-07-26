@@ -1,0 +1,9 @@
+import{o as t,c as l,k as n,q as h,s as r,A as a,e as s,a6 as i}from"../modules/vue-6ERutbIk.js";import{I as k}from"./default-CmtQZyJX.js";import{aZ as e}from"../index-lDzXMgCd.js";import{p as o,u as p,f as c}from"./context-BAa2bvz_.js";import"../modules/shiki-Cd9faTHx.js";const d=s("h3",null,"雑に送ってみる",-1),g=s("pre",{class:"shiki shiki-themes vitesse-dark vitesse-light slidev-code",style:{"--shiki-dark":"#dbd7caee","--shiki-light":"#393a34","--shiki-dark-bg":"#121212","--shiki-light-bg":"#ffffff"}},[s("code",{class:"language-md"},[s("span",{class:"line"},[s("span",{style:{"--shiki-dark":"#666666","--shiki-light":"#999999"}},"```")]),i(`
+`),s("span",{class:"line"},[s("span",{style:{"--shiki-dark":"#DBD7CAEE","--shiki-light":"#393A34"}},"4a 00 00 00")]),i(`
+`),s("span",{class:"line"},[s("span",{style:{"--shiki-dark":"#666666","--shiki-light":"#999999"}},"```")]),i(`
+`),s("span",{class:"line"}),i(`
+`),s("span",{class:"line"},[s("span",{style:{"--shiki-dark":"#DBD7CAEE","--shiki-light":"#393A34"}},"上記はMySQLサーバーから送られてくるパケットの一部です。それぞれ以下要件に従ってデコードするコードをScalaで作成してください。")]),i(`
+`),s("span",{class:"line"}),i(`
+`),s("span",{class:"line"},[s("span",{style:{"--shiki-dark":"#D4976C","--shiki-light":"#A65E2B"}},"-"),s("span",{style:{"--shiki-dark":"#DBD7CAEE","--shiki-light":"#393A34"}}," Scodecライブラリを使用")]),i(`
+`),s("span",{class:"line"},[s("span",{style:{"--shiki-dark":"#D4976C","--shiki-light":"#A65E2B"}},"-"),s("span",{style:{"--shiki-dark":"#DBD7CAEE","--shiki-light":"#393A34"}}," 最初の3つはペイロードの長さとしてデコード")]),i(`
+`),s("span",{class:"line"},[s("span",{style:{"--shiki-dark":"#D4976C","--shiki-light":"#A65E2B"}},"-"),s("span",{style:{"--shiki-dark":"#DBD7CAEE","--shiki-light":"#393A34"}}," 最後の1つはシークエンスIDとしてデコード")])])],-1),f=s("p",null,"※ ライブラリの指定はしなくても良い (使いたいものがあれば指定)",-1),C={__name:"45",setup(m){return o(e),p(),(_,A)=>(t(),l(k,h(r(a(c)(a(e),44))),{default:n(()=>[d,g,f]),_:1},16))}};export{C as default};
