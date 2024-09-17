@@ -10,7 +10,10 @@
     "export": "slidev export",
     "start:nextbeat-database": "slidev --open ./2024/nextbeat-database/slide.md",
     "export:nextbeat-database": "slidev export ./2024/nextbeat-database/slide.md --with-clicks",
-    "build:nextbeat-database": "slidev build ./2024/nextbeat-database/slide.md --base /lts --out ../../dist/"
+    "build:nextbeat-database": "slidev build ./2024/svelte5-component/slide.md --base /lts --out ../../dist/",
+    "start:svelte5-component": "slidev --open ./2024/svelte5-component/slide.md",
+    "export:svelte5-component": "slidev export ./2024/svelte5-component/slide.md --with-clicks",
+    "build:svelte5-component": "slidev build ./2024/svelte5-component/slide.md --base /lts --out ../../dist/"
   },
   "packageManager": "pnpm@8.13.1",
   "dependencies": {

@@ -9,6 +9,7 @@ on:
         required: true
         options:
           - 'nextbeat-database'
+          - 'svelte5-component'
 
 jobs:
   deploy:
