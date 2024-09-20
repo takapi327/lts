@@ -216,26 +216,27 @@ Svelte 5でのコンポーネント開発を見ていきます。
 </button>
 ```
 
-```svelte {*|1|6-10|4|12-14|17|*}
+```svelte {*|1|6-11|4|13-15|18|19-21|*}
 <svelte:options runes={true} />
 
 <script lang="ts">
   import type { HTMLButtonAttributes } from 'svelte/elements'
 
+  // 従来の Svelte における export let や $$props, $$restProps に相当
   let {
    color,
    children,
-   ...restProps
+   ...restProps // 従来の Svelte における $$restProps に相当
   }: { color: 'primary' | 'secondary' } & HTMLButtonAttributes = $props()
 
-  const propsWeControl = $derived({
-    class: color + (restProps.class ? ' ' + restProps.class : '')
+  const propsWeControl = $derived({ // 従来の Svelte における $: に相当
+    class: color + (restProps.class ? ' ' + restProps.class : '') // colorをclassとして使うため上書きされないようにする
   })
 </script>
 
 <button {...{ ...restProps, ...propsWeControl }}>
   {#if children}
-    {@render children()}
+    {@render children()} // 従来の Svelte における slot に相当
   {/if}
 </button>
 ```
@@ -274,7 +275,7 @@ Svelte 5でのコンポーネント開発を見ていきます。
   }
 </script>
 
-<Button {...props} onclick={() => console.log('Clicked!!')}>
+<Button {...props} onclick={() => console.log('Clicked!!')}> // イベントはrestPropsに含まれる
   Click me
 </Button>
 ```
@@ -301,7 +302,7 @@ Svelte 5でのコンポーネント開発を見ていきます。
 </script>
 ```
 
-```svelte {*|6|11-14|*}
+```svelte {*|6|11-14,17|*}
 <script lang="ts">
   import type { HTMLButtonAttributes, MouseEventHandler } from 'svelte/elements'
 
@@ -325,30 +326,27 @@ Svelte 5でのコンポーネント開発を見ていきます。
 
 ---
 
-## まとめ
+Svelte 5でのコンポーネント開発はSvelte 4までと比べてコンパクトになった気がします。(型が増えて複雑になったと感じる人もいるかも)
 
-- Runeの使い分けでコンポーネントの作り方が変わる
-  - Runeを使わない場合はSvelte 4までの作り方で作成可能
-  - Runeを使う場合は新しい構文を使う必要がある
-- イベントは`on:{event}`から`on{event}`に変更
-  - `createEventDispatcher`を使用しなくてもイベントはそのまま使える
-- 引数の型を明示する必要がなくなった
-  - 引数に手を加えたら型も自動的に更新される
-  - 引数は明示しなくても渡せるようになった。必須のものだけ明示すれば良くカスタマイズ性が上がった
-- `svelte:element`と組み合わせたら色々できる。
-- TailwindCSSとの相性が良かったりする
-  - 今後Styleを親で記載して子コンポーネント反映させれるようになるらしい？ので期待
+中途半端？にマテリアルデザインのようなフレームワークを使うよりも自作した方がカスタマイズ性も簡単に維持できるので、ありかなあと最近は思う。
 
----
-
-Svelte 5でのコンポーネント開発はSvelte 4までと比べてコンパクトになった気がします。
-
-中途半端？にマテリアルデザインのようなフレームワークを使うよりも自作した方がカスタマイズ性も簡単に維持できるので、
-
-`useState`や`ref`のような特別な関数の使用方法を学習する必要なくシンプルな構文のみを使用してリアクティビティを実現できていた時と比べると、`Rune`を使用することで他のフレームワーク達に近づき用途に応じて使い分けが発生するようになりました。
-
-自分は`Rune`の方が好きで最近は`Rune`しか使ってないが、ここがユーザーにどう受け入れられるかが気になりますね。
+ただし、`useState`や`ref`のような特別な関数の使用方法を学習する必要なくシンプルな構文のみを使用してリアクティビティを実現できていた時と比べると、
+`Rune`を使用することで他のフレームワーク達に近づき用途に応じて使い分けが発生するようになりました。 ここがユーザーにどう受け入れられるかが気になりますね。
 
 あとはSvelte 5への更新が困難になったエコシステムをどう救済するのかが課題ですね。(OSSを作る上では割と必須機能が削除された。)
 
 ※ Svelte 5の構文はLintやIDEなどほとんどが対応されたいないから今現時点の開発は辛い
+
+---
+
+## まとめ
+
+- イベントは`on:{event}`から`on{event}`に変更
+  - `createEventDispatcher`を使用しなくてもイベントはそのまま使える
+- 引数の型を明示する必要がなくなった
+  - 引数に手を加えたら型も自動的に更新される
+  - 必須のものだけ明示すれば良くカスタマイズ性が上がった
+- `svelte:element`と組み合わせたら色々できる。
+  - 例えば、単なるボタンと`a`タグを使用したリンク用のボタンをまとめたり
+- TailwindCSSとの相性が良かったりする
+  - 今後Styleを親で記載して子コンポーネント反映させれるようになるらしい？ので期待
